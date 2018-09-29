@@ -5,10 +5,11 @@ MyHeader.h
 /*
 first own header
 
-Revised July 21, 2018: initial release
-Revised August 16, 2018: open file added
-Revised August 23, 2018: RunAndMeasure added
+Revised July 21, 2018:		initial release
+Revised August 16, 2018:	open file added
+Revised August 23, 2018:	RunAndMeasure added
 Revised September 14, 2018: error renamed to My_error to avoid side effect with Matrix.h from BS
+Revised September 29, 2018: file functions reviewed (more C++17 style)
 
 */
 
@@ -72,20 +73,20 @@ int random_number(const int min, const int max)
 
 ifstream open_file_read(string filename)
 {
-	// Cette fonction helper permet d'ouvrir un fichier en lecture
-	ifstream ist{ filename };
-	ist.exceptions(ist.exceptions() | ios_base::badbit);
-	if (!ist)My_error("Impossible d'ouvrir le fichier ", filename);
-	return ist;
+	// Cette fonction helper permet d'ouvrir un fichier en lecture : la mémoire occupée par in_file sera libérée via RAII à la sortie du scope du callee (= close explicite inutile)
+	ifstream in_file{ filename.data(), ios::in };
+	if (!in_file.is_open()) My_error("Impossible d'ouvrir le fichier ", filename);
+	return in_file;
+
 }
 
 ofstream open_file_write(string filename)
 {
-	// Cette fonction helper permet d'ouvrir un fichier en écriture
-	ofstream ost{ filename };
-	ost.exceptions(ost.exceptions() | ios_base::badbit);
-	if (!ost)My_error("Impossible d'ouvrir le fichier ", filename);
-	return ost;
+	// Cette fonction helper permet d'ouvrir un fichier en écriture : la mémoire occupée par out_file sera libérée via RAII à la sortie du scope du callee (= close explicite inutile)
+	ofstream out_file{ filename.data(), ios::out | ios::trunc };
+	if (!out_file.is_open()) My_error("Impossible d'ouvrir le fichier ", filename);
+	return out_file;
+
 }
 
 template <typename TFunc> void RunAndMeasure(TFunc func)
@@ -96,6 +97,9 @@ template <typename TFunc> void RunAndMeasure(TFunc func)
 	const auto end = chrono::steady_clock::now();
 	cout << chrono::duration <double, milli>(end - start).count() << " ms\n";
 }
+
+
+
 #endif
 
 
